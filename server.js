@@ -23,13 +23,31 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  if (req.body && Object.keys(req.body).length > 0) {
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+  }
+  next();
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error occurred:', err);
+  res.status(500).json({
+    success: false,
+    message: 'Internal server error',
+    error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+  });
+});
+
 // Serve static files from React build (for production)
 app.use(express.static(path.join(__dirname, '../dance/dist')));
 
 // Serve static files from public directory
 app.use(express.static('public'));
-
-
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/danceschool', {
@@ -52,10 +70,22 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/dancescho
     }, 5000);
   });
 
+// Health check route
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+  });
+});
+
 // API info route
 app.get('/api', (req, res) => {
   res.json({ 
     message: 'Dance School API is running!',
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
     endpoints: {
       auth: '/api/auth (POST /login, /signup)',
       admin: '/api/admin (POST /login)',
@@ -147,7 +177,9 @@ app.use('/api/classes', classRoutes);
 app.get('/', (req, res) => {
   res.json({ 
     message: 'Dance School API is running!',
-    note: 'Frontend is running separately on port 5173 in development mode',
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    note: 'API is deployed and ready',
     endpoints: {
       auth: '/api/auth (POST /login, /signup)',
       admin: '/api/admin (POST /login)',
@@ -157,7 +189,16 @@ app.get('/', (req, res) => {
   });
 });
 
-
+// Catch-all route for unmatched requests
+app.use('*', (req, res) => {
+  console.log(`404 - Route not found: ${req.method} ${req.originalUrl}`);
+  res.status(404).json({
+    success: false,
+    message: 'Route not found',
+    path: req.originalUrl,
+    method: req.method
+  });
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
