@@ -1,0 +1,29 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "init-db": "node init-database.js",
+    "seed-classes": "node seed-initial-classes.js",
+    "test-classes": "node test-class-operations.js",
+    "dev-full": "concurrently \"npm run dev\" \"cd dance && npm run dev\"",
+    "build": "cd dance && npm run build",
+    "build-and-start": "npm run build && npm start",
+    "install-all": "npm install && cd dance && npm install"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.0.1",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.0.1"
+  }
+}
