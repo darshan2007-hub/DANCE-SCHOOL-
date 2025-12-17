@@ -13,7 +13,13 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:4000', 'http://localhost:3000'],
+  origin: [
+    'http://localhost:5173', 
+    'http://localhost:5175', 
+    'http://localhost:4000', 
+    'http://localhost:3000',
+    'https://cosmic-blini-fa572c.netlify.app'
+  ],
   credentials: true
 }));
 app.use(express.json());
